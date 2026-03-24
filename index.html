@@ -4,18 +4,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Global Bond Market Snapshot | BondStats</title>
-  <meta name="description" content="A daily snapshot of global bond markets showing top yields, biggest movers and cross-country bond market signals." />
+  <meta name="description" content="Track the highest government bond yields, biggest daily moves and global bond market signals across countries." />
   <style>
     :root {
       --bg: #07111d;
-      --panel: #111c2d;
-      --panel2: #162338;
-      --border: #24364f;
-      --text: #f3f6fb;
+      --panel: #0f1a2b;
+      --panel2: #152338;
+      --border: #263952;
+      --text: #f4f7fb;
       --muted: #9db0c8;
-      --accent: #86b7ff;
-      --danger: #ff8a8a;
-      --success: #8fd19e;
+      --accent: #8eb8ff;
+      --up: #8fd19e;
+      --down: #ff9b9b;
       --max: 1180px;
       --radius: 18px;
     }
@@ -25,10 +25,10 @@
     body {
       margin: 0;
       font-family: Arial, Helvetica, sans-serif;
-      background:
-        radial-gradient(circle at top left, #112542 0%, transparent 30%),
-        linear-gradient(180deg, #07111d 0%, #0b1422 100%);
       color: var(--text);
+      background:
+        radial-gradient(circle at top left, rgba(50,80,120,.35) 0%, transparent 28%),
+        linear-gradient(180deg, #07111d 0%, #0a1421 100%);
       line-height: 1.6;
     }
 
@@ -40,29 +40,24 @@
 
     .hero,
     .panel,
-    .card,
-    .note {
-      background: var(--panel);
+    .card {
+      background: rgba(15, 26, 43, 0.96);
       border: 1px solid var(--border);
       border-radius: var(--radius);
     }
 
     .hero,
-    .panel,
-    .note {
+    .panel {
       padding: 24px;
-    }
-
-    .hero {
       margin-bottom: 18px;
     }
 
     .eyebrow {
       margin: 0 0 10px;
       font-size: 12px;
-      font-weight: 700;
-      letter-spacing: .08em;
       text-transform: uppercase;
+      letter-spacing: .08em;
+      font-weight: 700;
       color: var(--accent);
     }
 
@@ -85,8 +80,15 @@
 
     .meta {
       margin-top: 16px;
-      color: var(--muted);
       font-size: 14px;
+      color: var(--muted);
+    }
+
+    .summary {
+      margin-top: 16px;
+      color: var(--text);
+      font-size: 16px;
+      max-width: 900px;
     }
 
     .grid {
@@ -98,7 +100,7 @@
 
     .card {
       padding: 18px;
-      background: var(--panel2);
+      background: rgba(21, 35, 56, 0.98);
     }
 
     .label {
@@ -112,18 +114,15 @@
     }
 
     .value {
-      font-size: 32px;
+      font-size: 34px;
       font-weight: 700;
       margin-bottom: 6px;
+      color: var(--text);
     }
 
-    .small {
+    .detail {
       font-size: 14px;
       color: var(--muted);
-    }
-
-    .section-head {
-      margin-bottom: 14px;
     }
 
     .table-wrap {
@@ -149,8 +148,17 @@
       letter-spacing: .04em;
     }
 
-    .change-up { color: var(--success); font-weight: 700; }
-    .change-down { color: var(--danger); font-weight: 700; }
+    .up { color: var(--up); font-weight: 700; }
+    .down { color: var(--down); font-weight: 700; }
+
+    .insight-box {
+      margin-top: 10px;
+      background: rgba(21, 35, 56, 0.85);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 18px;
+      color: var(--text);
+    }
 
     .links {
       display: flex;
@@ -168,9 +176,13 @@
       border: 1px solid var(--border);
       color: var(--text);
       text-decoration: none;
-      background: var(--panel2);
+      background: rgba(21, 35, 56, 0.98);
       font-size: 14px;
       font-weight: 700;
+    }
+
+    .links a:hover {
+      border-color: var(--accent);
     }
 
     @media (max-width: 980px) {
@@ -188,7 +200,7 @@
         padding: 14px;
       }
 
-      .hero, .panel, .note {
+      .hero, .panel {
         padding: 18px;
       }
 
@@ -204,38 +216,38 @@
       <p class="eyebrow">BondStats Snapshot</p>
       <h1>Global Bond Market Snapshot</h1>
       <p>
-        A quick overview of how global bond yields are moving across major economies and emerging markets.
-        Track the highest yields, biggest movers and broad market signals in one place.
+        A quick overview of the highest government bond yields, biggest market moves and key fixed income signals across countries.
       </p>
-      <div class="meta" id="meta">Loading snapshot...</div>
+      <div class="meta" id="meta">Loading market snapshot...</div>
+      <div class="summary" id="summary">
+        Loading summary...
+      </div>
     </section>
 
     <section class="grid">
       <div class="card">
         <span class="label">Highest Yield</span>
-        <div class="value" id="highest-yield">Loading...</div>
-        <div class="small" id="highest-yield-detail">—</div>
+        <div class="value" id="highest-yield">—</div>
+        <div class="detail" id="highest-yield-detail">Loading...</div>
       </div>
 
       <div class="card">
-        <span class="label">Lowest Yield</span>
-        <div class="value" id="lowest-yield">Loading...</div>
-        <div class="small" id="lowest-yield-detail">—</div>
+        <span class="label">Biggest Up Move</span>
+        <div class="value" id="highest-move-up">—</div>
+        <div class="detail" id="highest-move-up-detail">Loading...</div>
       </div>
 
       <div class="card">
-        <span class="label">Biggest Move</span>
-        <div class="value" id="biggest-move">Loading...</div>
-        <div class="small" id="biggest-move-detail">—</div>
+        <span class="label">Biggest Down Move</span>
+        <div class="value" id="highest-move-down">—</div>
+        <div class="detail" id="highest-move-down-detail">Loading...</div>
       </div>
     </section>
 
-    <section class="panel" style="margin-bottom:18px;">
-      <div class="section-head">
-        <h2>Top Yields</h2>
-        <p>The countries currently showing the highest 10-year government bond yields.</p>
-      </div>
-      <div class="table-wrap">
+    <section class="panel">
+      <h2>Top Yields</h2>
+      <p>The highest 10-year government bond yields currently tracked across countries.</p>
+      <div class="table-wrap" style="margin-top:14px;">
         <table>
           <thead>
             <tr>
@@ -251,12 +263,10 @@
       </div>
     </section>
 
-    <section class="panel" style="margin-bottom:18px;">
-      <div class="section-head">
-        <h2>Biggest Movers</h2>
-        <p>The largest positive and negative moves based on the latest available official data.</p>
-      </div>
-      <div class="table-wrap">
+    <section class="panel">
+      <h2>Biggest Movers</h2>
+      <p>The countries showing the largest recent positive and negative changes in yield.</p>
+      <div class="table-wrap" style="margin-top:14px;">
         <table>
           <thead>
             <tr>
@@ -272,21 +282,21 @@
       </div>
     </section>
 
-    <section class="note">
-      <h2>What this snapshot shows</h2>
-      <p style="margin-top:8px;">
-        Bond yields reflect inflation expectations, interest rate outlook and broader risk conditions.
-        Higher yields can indicate tighter financial conditions or stronger nominal growth expectations,
-        while lower yields may signal slower growth or demand for safer assets.
-      </p>
-      <p style="margin-top:12px;">
-        Note: update frequency depends on source availability. U.S. Treasury series may update daily, while many
-        international 10-year government bond series are published monthly.
-      </p>
+    <section class="panel">
+      <h2>What this snapshot suggests</h2>
+      <div class="insight-box" id="insight-box">
+        Loading market interpretation...
+      </div>
+    </section>
 
+    <section class="panel">
+      <h2>Explore More on BondStats</h2>
+      <p>Go deeper into global bond markets, daily yields and country-specific analysis.</p>
       <div class="links">
         <a href="https://www.bondstats.org/daily-bond-yields-dashboard">Daily Bond Yields Dashboard</a>
         <a href="https://www.bondstats.org/bond-market-hub">Bond Market Hub</a>
+        <a href="https://www.bondstats.org/united-states">United States Bond Yield</a>
+        <a href="https://www.bondstats.org/germany">Germany Bond Yield</a>
         <a href="https://www.bondstats.org/data-sources">Data Sources</a>
       </div>
     </section>
@@ -304,23 +314,43 @@
       return sign + Number(v).toFixed(2);
     }
 
-    function changeClass(v) {
+    function cls(v) {
       if (v === null || v === undefined) return "";
-      if (v > 0) return "change-up";
-      if (v < 0) return "change-down";
+      if (v > 0) return "up";
+      if (v < 0) return "down";
       return "";
     }
 
-    function rowHtml(item) {
+    function makeRow(item) {
       return `
         <tr>
           <td>${item.label}</td>
           <td>${fmtYield(item.value)}</td>
-          <td class="${changeClass(item.change)}">${fmtChange(item.change)}</td>
+          <td class="${cls(item.change)}">${fmtChange(item.change)}</td>
           <td>${item.date || "—"}</td>
           <td>${item.frequency || "—"}</td>
         </tr>
       `;
+    }
+
+    function buildInsight(topYield, topUp, topDown) {
+      const parts = [];
+
+      if (topYield) {
+        parts.push(`${topYield.label} currently has the highest 10-year government bond yield in the tracked set at ${fmtYield(topYield.value)}.`);
+      }
+
+      if (topUp) {
+        parts.push(`The strongest recent upward move is in ${topUp.label} (${fmtChange(topUp.change)}), suggesting tighter conditions or a shift in rate expectations.`);
+      }
+
+      if (topDown) {
+        parts.push(`The biggest decline is in ${topDown.label} (${fmtChange(topDown.change)}), which may reflect easing pressure or weaker growth expectations.`);
+      }
+
+      parts.push(`Overall, this snapshot helps identify where refinancing pressure, divergence and cross-country rate signals are becoming more important.`);
+
+      return parts.join(" ");
     }
 
     fetch("https://botapi33.github.io/bondstats-global-yields/global_yields.json?ts=" + Date.now())
@@ -328,67 +358,68 @@
       .then(data => {
         const countries = Object.values(data.countries || {}).filter(x => typeof x.value === "number");
 
-        if (!countries.length) throw new Error("No country data found");
+        if (!countries.length) throw new Error("No data available");
 
-        const sortedByYieldDesc = [...countries].sort((a, b) => b.value - a.value);
-        const sortedByYieldAsc = [...countries].sort((a, b) => a.value - b.value);
-        const sortedByAbsMove = [...countries]
-          .filter(x => typeof x.change === "number")
-          .sort((a, b) => Math.abs(b.change) - Math.abs(a.change));
-        const sortedByMoveDesc = [...countries]
-          .filter(x => typeof x.change === "number")
-          .sort((a, b) => b.change - a.change);
+        const byYieldDesc = [...countries].sort((a, b) => b.value - a.value);
+        const byChangeDesc = [...countries].filter(x => typeof x.change === "number").sort((a, b) => b.change - a.change);
+        const byChangeAsc = [...countries].filter(x => typeof x.change === "number").sort((a, b) => a.change - b.change);
 
-        const highest = sortedByYieldDesc[0];
-        const lowest = sortedByYieldAsc[0];
-        const biggest = sortedByAbsMove[0];
+        const highestYield = byYieldDesc[0];
+        const biggestUp = byChangeDesc[0];
+        const biggestDown = byChangeAsc[0];
 
         document.getElementById("meta").textContent =
-          "Source: " + data.meta.source +
-          " • Global file updated: " + data.meta.lastUpdated;
+          "Source: " + (data.meta?.source || "FRED") +
+          " • Global file updated: " + (data.meta?.lastUpdated || "—");
 
-        document.getElementById("highest-yield").textContent = fmtYield(highest.value);
+        document.getElementById("summary").textContent =
+          "This snapshot highlights where bond market pressure is currently strongest, where yields are changing most and how cross-country conditions compare.";
+
+        document.getElementById("highest-yield").textContent = fmtYield(highestYield.value);
         document.getElementById("highest-yield-detail").textContent =
-          highest.label + " • " + highest.date + " • " + highest.frequency;
+          highestYield.label + " • " + highestYield.date + " • " + highestYield.frequency;
 
-        document.getElementById("lowest-yield").textContent = fmtYield(lowest.value);
-        document.getElementById("lowest-yield-detail").textContent =
-          lowest.label + " • " + lowest.date + " • " + lowest.frequency;
+        document.getElementById("highest-move-up").textContent = fmtChange(biggestUp.change);
+        document.getElementById("highest-move-up").className = "value up";
+        document.getElementById("highest-move-up-detail").textContent =
+          biggestUp.label + " • " + fmtYield(biggestUp.value) + " • " + biggestUp.date;
 
-        document.getElementById("biggest-move").textContent = fmtChange(biggest.change);
-        document.getElementById("biggest-move-detail").textContent =
-          biggest.label + " • " + fmtYield(biggest.value) + " • " + biggest.date;
+        document.getElementById("highest-move-down").textContent = fmtChange(biggestDown.change);
+        document.getElementById("highest-move-down").className = "value down";
+        document.getElementById("highest-move-down-detail").textContent =
+          biggestDown.label + " • " + fmtYield(biggestDown.value) + " • " + biggestDown.date;
 
         document.getElementById("top-yields-table").innerHTML =
-          sortedByYieldDesc.slice(0, 10).map(rowHtml).join("");
+          byYieldDesc.slice(0, 10).map(makeRow).join("");
 
         const movers = [];
-        const topUp = sortedByMoveDesc.slice(0, 5);
-        const topDown = [...sortedByMoveDesc].reverse().slice(0, 5);
-        movers.push(...topUp, ...topDown);
-
-        const uniqueMovers = [];
         const seen = new Set();
-        for (const item of movers) {
+
+        [...byChangeDesc.slice(0, 5), ...byChangeAsc.slice(0, 5)].forEach(item => {
           if (!seen.has(item.label)) {
             seen.add(item.label);
-            uniqueMovers.push(item);
+            movers.push(item);
           }
-        }
+        });
 
         document.getElementById("top-movers-table").innerHTML =
-          uniqueMovers.slice(0, 10).map(rowHtml).join("");
+          movers.map(makeRow).join("");
+
+        document.getElementById("insight-box").textContent =
+          buildInsight(highestYield, biggestUp, biggestDown);
       })
       .catch(err => {
         document.getElementById("meta").textContent = "Snapshot could not be loaded.";
+        document.getElementById("summary").textContent = "Data unavailable.";
         document.getElementById("highest-yield").textContent = "—";
-        document.getElementById("lowest-yield").textContent = "—";
-        document.getElementById("biggest-move").textContent = "—";
+        document.getElementById("highest-move-up").textContent = "—";
+        document.getElementById("highest-move-down").textContent = "—";
         document.getElementById("highest-yield-detail").textContent = "Data unavailable";
-        document.getElementById("lowest-yield-detail").textContent = "Data unavailable";
-        document.getElementById("biggest-move-detail").textContent = "Data unavailable";
+        document.getElementById("highest-move-up-detail").textContent = "Data unavailable";
+        document.getElementById("highest-move-down-detail").textContent = "Data unavailable";
         document.getElementById("top-yields-table").innerHTML = `<tr><td colspan="5">Data unavailable</td></tr>`;
         document.getElementById("top-movers-table").innerHTML = `<tr><td colspan="5">Data unavailable</td></tr>`;
+        document.getElementById("insight-box").textContent = "Market interpretation unavailable.";
         console.error(err);
       });
   </script>
