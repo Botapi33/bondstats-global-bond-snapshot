@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Global Bond Market Snapshot | BondStats</title>
-  <meta name="description" content="Track the highest government bond yields, biggest daily moves and global bond market signals across countries." />
+  <meta name="description" content="Track the highest government bond yields, biggest yield movers and cross-country bond market signals in one place." />
   <style>
     :root {
       --bg: #07111d;
@@ -160,29 +160,9 @@
       color: var(--text);
     }
 
-    .links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 14px;
-    }
-
-    .links a {
-      display: inline-flex;
-      align-items: center;
-      min-height: 40px;
-      padding: 0 14px;
-      border-radius: 999px;
-      border: 1px solid var(--border);
-      color: var(--text);
-      text-decoration: none;
-      background: rgba(21, 35, 56, 0.98);
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    .links a:hover {
-      border-color: var(--accent);
+    .empty {
+      color: var(--muted);
+      padding: 10px 0;
     }
 
     @media (max-width: 980px) {
@@ -288,34 +268,22 @@
         Loading market interpretation...
       </div>
     </section>
-
-    <section class="panel">
-      <h2>Explore More on BondStats</h2>
-      <p>Go deeper into global bond markets, daily yields and country-specific analysis.</p>
-      <div class="links">
-        <a href="https://www.bondstats.org/daily-bond-yields-dashboard">Daily Bond Yields Dashboard</a>
-        <a href="https://www.bondstats.org/bond-market-hub">Bond Market Hub</a>
-        <a href="https://www.bondstats.org/united-states">United States Bond Yield</a>
-        <a href="https://www.bondstats.org/germany">Germany Bond Yield</a>
-        <a href="https://www.bondstats.org/data-sources">Data Sources</a>
-      </div>
-    </section>
   </main>
 
   <script>
     function fmtYield(v) {
-      if (v === null || v === undefined) return "—";
+      if (v === null || v === undefined || isNaN(v)) return "—";
       return Number(v).toFixed(2) + "%";
     }
 
     function fmtChange(v) {
-      if (v === null || v === undefined) return "—";
+      if (v === null || v === undefined || isNaN(v)) return "—";
       const sign = v > 0 ? "+" : "";
       return sign + Number(v).toFixed(2);
     }
 
     function cls(v) {
-      if (v === null || v === undefined) return "";
+      if (v === null || v === undefined || isNaN(v)) return "";
       if (v > 0) return "up";
       if (v < 0) return "down";
       return "";
@@ -333,22 +301,42 @@
       `;
     }
 
+    function normalizeCountries(rawCountries) {
+      return Object.values(rawCountries || {})
+        .map(item => ({
+          label: item.label,
+          value: typeof item.value === "number" ? item.value : Number(item.value),
+          change: item.change === null || item.change === undefined ? null : Number(item.change),
+          date: item.date || "—",
+          frequency: item.frequency || "—"
+        }))
+        .filter(item => !isNaN(item.value));
+    }
+
     function buildInsight(topYield, topUp, topDown) {
       const parts = [];
 
       if (topYield) {
-        parts.push(`${topYield.label} currently has the highest 10-year government bond yield in the tracked set at ${fmtYield(topYield.value)}.`);
+        parts.push(
+          `${topYield.label} currently has the highest 10-year government bond yield in the tracked set at ${fmtYield(topYield.value)}.`
+        );
       }
 
-      if (topUp) {
-        parts.push(`The strongest recent upward move is in ${topUp.label} (${fmtChange(topUp.change)}), suggesting tighter conditions or a shift in rate expectations.`);
+      if (topUp && topUp.change !== null) {
+        parts.push(
+          `The strongest recent upward move is in ${topUp.label} (${fmtChange(topUp.change)}), suggesting tighter conditions or a shift in rate expectations.`
+        );
       }
 
-      if (topDown) {
-        parts.push(`The biggest decline is in ${topDown.label} (${fmtChange(topDown.change)}), which may reflect easing pressure or weaker growth expectations.`);
+      if (topDown && topDown.change !== null) {
+        parts.push(
+          `The biggest decline is in ${topDown.label} (${fmtChange(topDown.change)}), which may reflect easing pressure or weaker growth expectations.`
+        );
       }
 
-      parts.push(`Overall, this snapshot helps identify where refinancing pressure, divergence and cross-country rate signals are becoming more important.`);
+      parts.push(
+        `Overall, this snapshot helps identify where refinancing pressure, divergence and cross-country rate signals are becoming more important.`
+      );
 
       return parts.join(" ");
     }
@@ -356,17 +344,18 @@
     fetch("https://botapi33.github.io/bondstats-global-yields/global_yields.json?ts=" + Date.now())
       .then(res => res.json())
       .then(data => {
-        const countries = Object.values(data.countries || {}).filter(x => typeof x.value === "number");
+        const countries = normalizeCountries(data.countries);
 
         if (!countries.length) throw new Error("No data available");
 
         const byYieldDesc = [...countries].sort((a, b) => b.value - a.value);
-        const byChangeDesc = [...countries].filter(x => typeof x.change === "number").sort((a, b) => b.change - a.change);
-        const byChangeAsc = [...countries].filter(x => typeof x.change === "number").sort((a, b) => a.change - b.change);
+        const withChange = countries.filter(x => x.change !== null && !isNaN(x.change));
+        const byChangeDesc = [...withChange].sort((a, b) => b.change - a.change);
+        const byChangeAsc = [...withChange].sort((a, b) => a.change - b.change);
 
-        const highestYield = byYieldDesc[0];
-        const biggestUp = byChangeDesc[0];
-        const biggestDown = byChangeAsc[0];
+        const highestYield = byYieldDesc[0] || null;
+        const biggestUp = byChangeDesc[0] || null;
+        const biggestDown = byChangeAsc[0] || null;
 
         document.getElementById("meta").textContent =
           "Source: " + (data.meta?.source || "FRED") +
@@ -375,19 +364,29 @@
         document.getElementById("summary").textContent =
           "This snapshot highlights where bond market pressure is currently strongest, where yields are changing most and how cross-country conditions compare.";
 
-        document.getElementById("highest-yield").textContent = fmtYield(highestYield.value);
-        document.getElementById("highest-yield-detail").textContent =
-          highestYield.label + " • " + highestYield.date + " • " + highestYield.frequency;
+        if (highestYield) {
+          document.getElementById("highest-yield").textContent = fmtYield(highestYield.value);
+          document.getElementById("highest-yield-detail").textContent =
+            highestYield.label + " • " + highestYield.date + " • " + highestYield.frequency;
+        }
 
-        document.getElementById("highest-move-up").textContent = fmtChange(biggestUp.change);
-        document.getElementById("highest-move-up").className = "value up";
-        document.getElementById("highest-move-up-detail").textContent =
-          biggestUp.label + " • " + fmtYield(biggestUp.value) + " • " + biggestUp.date;
+        if (biggestUp) {
+          document.getElementById("highest-move-up").textContent = fmtChange(biggestUp.change);
+          document.getElementById("highest-move-up").className = "value up";
+          document.getElementById("highest-move-up-detail").textContent =
+            biggestUp.label + " • " + fmtYield(biggestUp.value) + " • " + biggestUp.date;
+        } else {
+          document.getElementById("highest-move-up-detail").textContent = "No recent move available";
+        }
 
-        document.getElementById("highest-move-down").textContent = fmtChange(biggestDown.change);
-        document.getElementById("highest-move-down").className = "value down";
-        document.getElementById("highest-move-down-detail").textContent =
-          biggestDown.label + " • " + fmtYield(biggestDown.value) + " • " + biggestDown.date;
+        if (biggestDown) {
+          document.getElementById("highest-move-down").textContent = fmtChange(biggestDown.change);
+          document.getElementById("highest-move-down").className = "value down";
+          document.getElementById("highest-move-down-detail").textContent =
+            biggestDown.label + " • " + fmtYield(biggestDown.value) + " • " + biggestDown.date;
+        } else {
+          document.getElementById("highest-move-down-detail").textContent = "No recent move available";
+        }
 
         document.getElementById("top-yields-table").innerHTML =
           byYieldDesc.slice(0, 10).map(makeRow).join("");
@@ -396,14 +395,17 @@
         const seen = new Set();
 
         [...byChangeDesc.slice(0, 5), ...byChangeAsc.slice(0, 5)].forEach(item => {
-          if (!seen.has(item.label)) {
-            seen.add(item.label);
+          const key = item.label;
+          if (!seen.has(key)) {
+            seen.add(key);
             movers.push(item);
           }
         });
 
         document.getElementById("top-movers-table").innerHTML =
-          movers.map(makeRow).join("");
+          movers.length
+            ? movers.map(makeRow).join("")
+            : `<tr><td colspan="5" class="empty">No mover data available</td></tr>`;
 
         document.getElementById("insight-box").textContent =
           buildInsight(highestYield, biggestUp, biggestDown);
@@ -417,8 +419,8 @@
         document.getElementById("highest-yield-detail").textContent = "Data unavailable";
         document.getElementById("highest-move-up-detail").textContent = "Data unavailable";
         document.getElementById("highest-move-down-detail").textContent = "Data unavailable";
-        document.getElementById("top-yields-table").innerHTML = `<tr><td colspan="5">Data unavailable</td></tr>`;
-        document.getElementById("top-movers-table").innerHTML = `<tr><td colspan="5">Data unavailable</td></tr>`;
+        document.getElementById("top-yields-table").innerHTML = `<tr><td colspan="5" class="empty">Data unavailable</td></tr>`;
+        document.getElementById("top-movers-table").innerHTML = `<tr><td colspan="5" class="empty">Data unavailable</td></tr>`;
         document.getElementById("insight-box").textContent = "Market interpretation unavailable.";
         console.error(err);
       });
